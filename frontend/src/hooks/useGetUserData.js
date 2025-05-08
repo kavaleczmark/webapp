@@ -14,7 +14,7 @@ export const useGetUserData = () => {
         setError(null);
         setIsFinished(false);
         try {
-            const response = await axios.get(`users`);
+            const response = await axios.get(`user/userData`);
             if (response.status === 200) {
                 setData(response.data.data);
                 setIsFinished(true);

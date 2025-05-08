@@ -11,7 +11,6 @@ function Notes() {
   const [noteTitle, setNoteTitle] = useState("");
   const [versions, setVersions] = useState([]);
   const {data} = useGetUserData();
-  const [userData, setUserData] = useState(data || {});
 
   const handleCreateNote = () => {
     const note = { title: newNoteTitle, content: "", versions: [] };
@@ -45,9 +44,9 @@ function Notes() {
     <div className="container-fluid vh-100 d-flex p-0">
       <div className="border-end border-2 p-3" style={{ width: "20%" }}>
         <h5>Felhasználó</h5>
-        {userData && (
+        {data && (
                 <>
-                  <div name="Felhasználónév" value={userData.username} formName="username" />
+                  <div>{data.username}</div>
                 </>
               )}
         <ul className="list-group mb-3">
