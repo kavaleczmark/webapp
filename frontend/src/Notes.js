@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Card } from "react-bootstrap";
+import { useGetUserData } from "./hooks/useGetUserData";
 
-export default function JegyzetApp() {
+function Notes() {
   const [showModal, setShowModal] = useState(false);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [notes, setNotes] = useState([]);
@@ -9,6 +10,7 @@ export default function JegyzetApp() {
   const [noteContent, setNoteContent] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const [versions, setVersions] = useState([]);
+  const {data,isLoading,isFinished,error} = useGetUserData();
 
   const handleCreateNote = () => {
     const note = { title: newNoteTitle, content: "", versions: [] };
@@ -128,3 +130,4 @@ export default function JegyzetApp() {
     </div>
   );
 }
+export default Notes;
