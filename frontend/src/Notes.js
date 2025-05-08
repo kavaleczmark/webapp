@@ -66,21 +66,40 @@ function Notes() {
         />
         <h5>Jegyzetek</h5>
         <ul className="list-group mb-3">
-          {notes.map((note, index) => (
+        {notes.map((note, index) => (
             <li
-              key={index}
-              className="list-group-item list-group-item-action"
-              onClick={() => {
+            key={index}
+            className="list-group-item d-flex justify-content-between align-items-center"
+            style={{ cursor: "pointer" }}
+            >
+            <span
+                onClick={() => {
                 setSelectedNote(index);
                 setNoteContent(note.content);
                 setNoteTitle(note.title);
-              }}
-              style={{ cursor: "pointer" }}
+                }}
             >
-              {note.title}
+                {note.title}
+            </span>
+            <span
+                onClick={(e) => {
+                e.stopPropagation(); 
+                const updatedNotes = notes.filter((_, i) => i !== index);
+                setNotes(updatedNotes);
+                if (selectedNote === index) {
+                    setSelectedNote(null);
+                    setNoteContent("");
+                    setNoteTitle("");
+                }
+                }}
+                title="Törlés"
+            >
+                🗑️
+            </span>
             </li>
-          ))}
+        ))}
         </ul>
+
         <Button variant="success" onClick={() => setShowModal(true)}>
           + Új jegyzet
         </Button>
