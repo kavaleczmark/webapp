@@ -113,6 +113,7 @@ const register = async (req, res) => {
     });
   }
 };
+
 const refresh = async (req, res) => {
   if (req.cookies?.refresh) {
     const refreshToken = req.cookies.refresh;
@@ -143,8 +144,37 @@ const refresh = async (req, res) => {
     return res.status(406).json({ error: "Jogosulatlan" });
   }
 };
+
+const getUserData = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const user = await User.findOne({
+      attributes: ["id", "username", "password", "reg_date"],
+      where: { id: userId },
+    });
+    if (user) {
+      res.status(200).json({
+        data: {
+          username: user.username,
+          email: user.email,
+          password: user.password,
+          reg_date: user.reg_date,
+        },
+      });
+    } else {
+      throw Error("Valami hiba történt!");
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
     login,
     register,
-    refresh
+    refresh,
+    getUserData
 };
