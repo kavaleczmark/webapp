@@ -8,7 +8,7 @@ import { ToastContainer, toast, Bounce} from 'react-toastify';
 function Registration() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rePassword, setRePassword] = useState("");
+  const [repassword, setRePassword] = useState("");
   const {registration, error, isLoading, isFinished}= useRegister();
   const navigate = useNavigate();
   const registrationButton = useRef(null);
@@ -17,7 +17,7 @@ function Registration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     toastId.current = toast.loading("Kérem várjon!");
-    await registration(username, password, rePassword);
+    await registration(username, password, repassword);
   };
 
 
@@ -103,7 +103,7 @@ function Registration() {
                 <Form.Control
                   name='repassword'
                   type='password'
-                  value={rePassword}
+                  value={repassword}
                   required onChange={(e) => setRePassword(e.target.value)}
                 />
               </Form.Group>

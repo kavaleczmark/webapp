@@ -2,23 +2,22 @@ import { useState } from 'react';
 import { instance as axios } from '../api/axios';
 import { useAuthContext } from './useAuthContext';
 
-
 export const useRegister = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(null);
     const [isFinished, setIsFinished] = useState(null);
     const {dispatch} = useAuthContext();
 
-    const registration = async (userName, password) => {
+    const registration = async (userName, password, repassword) => {
         setIsLoading(true);
         setError(null);
         setIsFinished(false);
         axios.post("user/registration", {
             username : `${userName}`,
-            password : `${password}`
+            password : `${password}`,
+            repassword : `${repassword}`
         }).then(function(response){
             if(response.status === 200) {
-                localStorage.setItem("user", JSON.stringify(response.data));
                 dispatch({
                     type: "LOGIN",
                     payload: response
