@@ -5,7 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Registration from './Registration';
 import SignIn from './SignIn';
-
+import { AuthContextProvider } from './context/AuthContext';
+import { useAuthContext } from './hooks/useAuthContext';
 function App() {
 
   return (
@@ -19,5 +20,7 @@ function App() {
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
+  <AuthContextProvider> 
     <App />
+  </AuthContextProvider>
 );
