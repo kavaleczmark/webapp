@@ -9,8 +9,6 @@ function Registration() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rePassword, setRePassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const {registration, error, isLoading, isFinished}= useRegister();
   const navigate = useNavigate();
   const registrationButton = useRef(null);
@@ -80,11 +78,11 @@ function Registration() {
               <Form.Group controlId="formUsername" className="mb-3">
                 <Form.Label>Felhasználónév</Form.Label>
                 <Form.Control
-                name='username'
+                  name='username'
                   type="text"
                   placeholder="Felhasználónév"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  required onChange={(e) => setUsername(e.target.value)}
                 />
               </Form.Group>
 
@@ -93,29 +91,20 @@ function Registration() {
                 <div className="d-flex">
                   <Form.Control
                     name='password'
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Jelszó"
+                    type='password'
                     value={password}
                     required onChange={(e) => setPassword(e.target.value)}
                   />
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="ms-2"
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </Button>
                 </div>
               </Form.Group>
 
               <Form.Group controlId="formConfirmPassword" className="mb-3">
                 <Form.Label>Jelszó megerősítése</Form.Label>
                 <Form.Control
-                name='rePassword'
-                  type={showPassword ? 'text' : 'rePassword'}
-                  placeholder="Jelszó újra"
-                  value={confirmPassword}
-                  required onChange={(e) => setConfirmPassword(e.target.value)}
+                  name='repassword'
+                  type='password'
+                  value={rePassword}
+                  required onChange={(e) => setRePassword(e.target.value)}
                 />
               </Form.Group>
 
