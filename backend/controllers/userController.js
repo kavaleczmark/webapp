@@ -156,7 +156,6 @@ const getUserData = async (req, res) => {
       res.status(200).json({
         data: {
           username: user.username,
-          email: user.email,
           password: user.password,
           reg_date: user.reg_date,
         },
