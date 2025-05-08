@@ -7,6 +7,7 @@ import Registration from './Registration';
 import SignIn from './SignIn';
 import { AuthContextProvider } from './context/AuthContext';
 import { useAuthContext } from './hooks/useAuthContext';
+import Notes from './Notes.js'
 function App() {
 
   return (
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/regisztracio" element={<Registration />} />
         <Route path="/" element={<SignIn />} />
+        <Route path="/jegyzetek" element={<Notes />} />
       </Routes>
     </BrowserRouter>
   );
