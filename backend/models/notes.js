@@ -12,18 +12,6 @@ const Notes = sequelize.define("notes", {
         type: Sequelize.INTEGER,
         allowNull: false
     },
-    date: {
-        type: Sequelize.DATE,
-        allowNull: false
-    },
-    name: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    text: {
-        type: Sequelize.TEXT,
-        allowNull: false
-    }
 });
 
 module.exports = Notes;
