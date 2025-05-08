@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Card } from "react-bootstrap";
 
-function Notes() {
+export default function JegyzetApp() {
   const [showModal, setShowModal] = useState(false);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [noteContent, setNoteContent] = useState("");
+  const [noteTitle, setNoteTitle] = useState("");
   const [versions, setVersions] = useState([]);
 
   const handleCreateNote = () => {
@@ -18,17 +19,23 @@ function Notes() {
 
   const handleSaveNote = () => {
     if (selectedNote !== null) {
-      const newVersions = [...versions];
-      newVersions.push({
-        title: notes[selectedNote].title,
+      const newVersion = {
+        title: noteTitle,
         date: new Date().toLocaleString(),
         content: noteContent,
-      });
-      setVersions(newVersions);
+      };
+      const updatedVersions = [...versions, newVersion];
+      setVersions(updatedVersions);
       const updatedNotes = [...notes];
+      updatedNotes[selectedNote].title = noteTitle;
       updatedNotes[selectedNote].content = noteContent;
       setNotes(updatedNotes);
     }
+  };
+
+  const handleLoadVersion = (version) => {
+    setNoteContent(version.content);
+    setNoteTitle(version.title);
   };
 
   return (
@@ -43,6 +50,7 @@ function Notes() {
               onClick={() => {
                 setSelectedNote(index);
                 setNoteContent(note.content);
+                setNoteTitle(note.title);
               }}
               style={{ cursor: "pointer" }}
             >
@@ -56,7 +64,13 @@ function Notes() {
       <div className="border-end border-start border-2 p-3 d-flex flex-column" style={{ width: "60%" }}>
         {selectedNote !== null ? (
           <>
-            <h4 className="mb-3">{notes[selectedNote].title}</h4>
+            <Form.Control
+              type="text"
+              className="mb-3"
+              value={noteTitle}
+              onChange={(e) => setNoteTitle(e.target.value)}
+              placeholder="Jegyzet címe"
+            />
             <Form.Control
               as="textarea"
               rows={20}
@@ -75,7 +89,12 @@ function Notes() {
         <h5>Verziók</h5>
         <div className="d-flex flex-column gap-2">
           {versions.map((v, i) => (
-            <Card key={i} className="border-secondary">
+            <Card
+              key={i}
+              className="border-secondary"
+              style={{ cursor: "pointer" }}
+              onClick={() => handleLoadVersion(v)}
+            >
               <Card.Body>
                 <Card.Title>{v.title}</Card.Title>
                 <Card.Text><small>{v.date}</small></Card.Text>
@@ -84,7 +103,6 @@ function Notes() {
           ))}
         </div>
       </div>
-
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -110,4 +128,3 @@ function Notes() {
     </div>
   );
 }
-export default Notes;
