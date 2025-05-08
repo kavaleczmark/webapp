@@ -11,6 +11,7 @@ function Notes() {
   const [noteTitle, setNoteTitle] = useState("");
   const [versions, setVersions] = useState([]);
   const {data,isLoading,isFinished,error} = useGetUserData();
+  const [userData, setUserData] = useState(data || {});
 
   const handleCreateNote = () => {
     const note = { title: newNoteTitle, content: "", versions: [] };

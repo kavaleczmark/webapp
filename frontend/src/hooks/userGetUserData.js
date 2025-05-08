@@ -37,5 +37,5 @@ export const useGetUserData = () => {
         }
     }, [user]);
 
-    return { data, isLoading, isFinished, error, refreshBalance: getData };
+    return { data, isLoading, isFinished, error, getData };
 };
