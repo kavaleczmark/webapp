@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/users");
 const { sha1, createAccessToken, createRefreshToken } = require("../utils/userUtils");
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
