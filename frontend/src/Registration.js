@@ -8,6 +8,7 @@ import { ToastContainer, toast, Bounce} from 'react-toastify';
 function Registration() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rePassword, setRePassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const {registration, error, isLoading, isFinished}= useRegister();
@@ -18,7 +19,7 @@ function Registration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     toastId.current = toast.loading("Kérem várjon!");
-    await registration(username, password);
+    await registration(username, password, rePassword);
   };
 
 
@@ -79,6 +80,7 @@ function Registration() {
               <Form.Group controlId="formUsername" className="mb-3">
                 <Form.Label>Felhasználónév</Form.Label>
                 <Form.Control
+                name='username'
                   type="text"
                   placeholder="Felhasználónév"
                   value={username}
@@ -90,7 +92,7 @@ function Registration() {
                 <Form.Label>Jelszó</Form.Label>
                 <div className="d-flex">
                   <Form.Control
-                    name='username'
+                    name='password'
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Jelszó"
                     value={password}
@@ -109,8 +111,8 @@ function Registration() {
               <Form.Group controlId="formConfirmPassword" className="mb-3">
                 <Form.Label>Jelszó megerősítése</Form.Label>
                 <Form.Control
-                name='password'
-                  type={showPassword ? 'text' : 'password'}
+                name='rePassword'
+                  type={showPassword ? 'text' : 'rePassword'}
                   placeholder="Jelszó újra"
                   value={confirmPassword}
                   required onChange={(e) => setConfirmPassword(e.target.value)}
