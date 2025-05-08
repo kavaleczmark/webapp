@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Card } from "react-bootstrap";
 import { useGetUserData } from "./hooks/useGetUserData";
+import { FaUserCircle } from "react-icons/fa";
 
 function Notes() {
   const [showModal, setShowModal] = useState(false);
@@ -10,7 +11,7 @@ function Notes() {
   const [noteContent, setNoteContent] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const [versions, setVersions] = useState([]);
-  const {data} = useGetUserData();
+  const { data } = useGetUserData();
 
   const handleCreateNote = () => {
     const note = { title: newNoteTitle, content: "", versions: [] };
@@ -43,12 +44,27 @@ function Notes() {
   return (
     <div className="container-fluid vh-100 d-flex p-0">
       <div className="border-end border-2 p-3" style={{ width: "20%" }}>
-        <h5>Felhasználó</h5>
-        {data && (
-                <>
-                  <div>{data.username}</div>
-                </>
-              )}
+        <div className="d-flex align-items-center mb-4">
+          <FaUserCircle size={60} className="text-primary me-3" />
+          <div>
+            {data && (
+              <>
+                <h5 className="fw-bold">{data.username}</h5>
+                <small className="text-muted">
+                  Regisztráció dátuma: {data.reg_date}
+                </small>
+              </>
+            )}
+          </div>
+        </div>
+
+        <hr
+          style={{
+            border: "1px solid #ddd",
+            marginBottom: "20px",
+          }}
+        />
+        <h5>Jegyzetek</h5>
         <ul className="list-group mb-3">
           {notes.map((note, index) => (
             <li
@@ -65,10 +81,15 @@ function Notes() {
             </li>
           ))}
         </ul>
-        <Button variant="success" onClick={() => setShowModal(true)}>+ Új jegyzet</Button>
+        <Button variant="success" onClick={() => setShowModal(true)}>
+          + Új jegyzet
+        </Button>
       </div>
 
-      <div className="border-end border-start border-2 p-3 d-flex flex-column" style={{ width: "60%" }}>
+      <div
+        className="border-end border-start border-2 p-3 d-flex flex-column"
+        style={{ width: "60%" }}
+      >
         {selectedNote !== null ? (
           <>
             <Form.Control
@@ -85,7 +106,9 @@ function Notes() {
               onChange={(e) => setNoteContent(e.target.value)}
               className="flex-grow-1 mb-3"
             />
-            <Button variant="primary" onClick={handleSaveNote}>Mentés</Button>
+            <Button variant="primary" onClick={handleSaveNote}>
+              Mentés
+            </Button>
           </>
         ) : (
           <p>Válassz ki egy jegyzetet!</p>
@@ -104,7 +127,9 @@ function Notes() {
             >
               <Card.Body>
                 <Card.Title>{v.title}</Card.Title>
-                <Card.Text><small>{v.date}</small></Card.Text>
+                <Card.Text>
+                  <small>{v.date}</small>
+                </Card.Text>
               </Card.Body>
             </Card>
           ))}
@@ -128,8 +153,12 @@ function Notes() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Mégse</Button>
-          <Button variant="primary" onClick={handleCreateNote}>Létrehozás</Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Mégse
+          </Button>
+          <Button variant="primary" onClick={handleCreateNote}>
+            Létrehozás
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>
