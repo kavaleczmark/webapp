@@ -11,6 +11,17 @@ const sequelize = new Sequelize(
             timestamps: false,
             freezeTableName: true,
         },
+        dialectOptions: {
+            useUTC: false, 
+            dateStrings: true,
+            typeCast: function (field, next) { 
+              if (field.type === 'DATETIME') {
+                return field.string()
+              }
+                return next()
+              },
+          },
+        timezone: '+02:00'
     }
 );
 sequelize
