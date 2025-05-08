@@ -83,7 +83,7 @@ const register = async (req, res) => {
     );
 
     if (response !== null) {
-      const token = createToken(response.get("id"));
+      const token = createAccessToken(response.get("id"));
       res.cookie("user", token, {
         httpOnly: true,
         secure: true,
