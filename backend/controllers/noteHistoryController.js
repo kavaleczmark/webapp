@@ -47,7 +47,7 @@ const createNote = async (req, res) => {
       date: new Date()
     });
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Jegyzet sikeresen létrehozva",
       noteId: newNote.id,
       version: history
