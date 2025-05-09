@@ -1,21 +1,46 @@
-import React, { useState } from "react";
-import { Modal, Button, Form, Card } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  Button,
+  Form,
+  Card,
+  Row,
+  Col,
+  Container,
+} from "react-bootstrap";
 import { useGetUserData } from "./hooks/useGetUserData";
 import { FaUserCircle } from "react-icons/fa";
-
+import { useGetLatestNotesForUser } from "./hooks/useGetLatestNotesForUser";
 function Notes() {
   const [showModal, setShowModal] = useState(false);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
-  const [noteContent, setNoteContent] = useState("");
+  const [noteText, setNoteText] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const [versions, setVersions] = useState([]);
   const { data } = useGetUserData();
+  const { noteHistory, isLoading, isFinished, error, refreshNoteHistory } =useGetLatestNotesForUser();
+
+  useEffect(() => {
+      if (isFinished && noteHistory.length > 0) {
+        const transformed = noteHistory.map((n) => ({
+          title: n.latestVersion?.title || "Névtelen jegyzet",
+          text: n.latestVersion?.text || "",
+          notesId: n.notes_id,
+          date: n.latestVersion?.date || "",
+        }));
+        setNotes(transformed);
+      }
+    }, [isFinished, noteHistory]);
 
   const handleCreateNote = () => {
-    const note = { title: newNoteTitle, content: "", versions: [] };
-    setNotes([...notes, note]);
+    const note = {
+      title: newNoteTitle,
+      text: "",
+      versions: [],
+      date: new Date().toLocaleString(),
+    };
     setShowModal(false);
     setNewNoteTitle("");
   };
@@ -25,135 +50,136 @@ function Notes() {
       const newVersion = {
         title: noteTitle,
         date: new Date().toLocaleString(),
-        content: noteContent,
+        text: noteText,
       };
       const updatedVersions = [...versions, newVersion];
       setVersions(updatedVersions);
       const updatedNotes = [...notes];
       updatedNotes[selectedNote].title = noteTitle;
-      updatedNotes[selectedNote].content = noteContent;
+      updatedNotes[selectedNote].content = noteText;
       setNotes(updatedNotes);
     }
   };
 
   const handleLoadVersion = (version) => {
-    setNoteContent(version.content);
+    setNoteText(version.text);
     setNoteTitle(version.title);
   };
 
   return (
-    <div className="container-fluid vh-100 d-flex p-0">
-      <div className="border-end border-2 p-3" style={{ width: "20%" }}>
-        <div className="d-flex align-items-center mb-4">
-          <FaUserCircle size={60} className="text-primary me-3" />
-          <div>
-            {data && (
-              <>
-                <h5 className="fw-bold">{data.username}</h5>
-                <small className="text-muted">
-                  Regisztráció dátuma: {data.reg_date}
-                </small>
-              </>
-            )}
+    <Container fluid className="vh-100 py-3">
+      <Row className="h-100">
+        <Col xs={12} md={3} className="border-end mb-3 mb-md-0">
+          <div className="d-flex align-items-center mb-4">
+            <FaUserCircle size={60} className="text-primary me-3" />
+            <div>
+              {data && (
+                <>
+                  <h5 className="fw-bold">{data.username}</h5>
+                  <small className="text-muted">
+                    Regisztráció dátuma: {data.reg_date}
+                  </small>
+                </>
+              )}
+            </div>
           </div>
-        </div>
 
-        <hr
-          style={{
-            border: "1px solid #ddd",
-            marginBottom: "20px",
-          }}
-        />
-        <h5>Jegyzetek</h5>
-        <ul className="list-group mb-3">
-        {notes.map((note, index) => (
-            <li
-            key={index}
-            className="list-group-item d-flex justify-content-between align-items-center"
-            style={{ cursor: "pointer" }}
-            >
-            <span
-                onClick={() => {
-                setSelectedNote(index);
-                setNoteContent(note.content);
-                setNoteTitle(note.title);
-                }}
-            >
-                {note.title}
-            </span>
-            <span
-                onClick={(e) => {
-                e.stopPropagation(); 
-                const updatedNotes = notes.filter((_, i) => i !== index);
-                setNotes(updatedNotes);
-                if (selectedNote === index) {
-                    setSelectedNote(null);
-                    setNoteContent("");
-                    setNoteTitle("");
-                }
-                }}
-                title="Törlés"
-            >
-                🗑️
-            </span>
-            </li>
-        ))}
-        </ul>
+          <hr style={{ border: "1px solid #ddd", marginBottom: "20px" }} />
 
-        <Button variant="success" onClick={() => setShowModal(true)}>
-          + Új jegyzet
-        </Button>
-      </div>
+          <h5>Jegyzetek</h5>
+          <ul className="list-group mb-3">
+            {notes && notes.map((note, index) => (
+              <li
+                key={note.noteId || index}
+                className="list-group-item d-flex justify-content-between align-items-center"
+                style={{ cursor: "pointer" }}
+              >
+                <span
+                  onClick={() => {
+                    setSelectedNote(index);
+                    setNoteText(note.text);
+                    setNoteTitle(note.title);
+                  }}
+                >
+                  <div className="fw-bold">{note.title}</div>
+                  <div className="text-muted">{note.text?.substring(0, 25)}...</div>
+                  <div className="text-muted">{note.date}</div>
+                </span>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const updatedNotes = notes.filter((_, i) => i !== index);
+                    setNotes(updatedNotes);
+                    if (selectedNote === index) {
+                      setSelectedNote(null);
+                      setNoteText("");
+                      setNoteTitle("");
+                    }
+                  }}
+                  title="Törlés"
+                >
+                  🗑️
+                </span>
+              </li>
+            ))}
+          </ul>
 
-      <div
-        className="border-end border-start border-2 p-3 d-flex flex-column"
-        style={{ width: "60%" }}
-      >
-        {selectedNote !== null ? (
-          <>
-            <Form.Control
-              type="text"
-              className="mb-3"
-              value={noteTitle}
-              onChange={(e) => setNoteTitle(e.target.value)}
-              placeholder="Jegyzet címe"
-            />
-            <Form.Control
-              as="textarea"
-              rows={20}
-              value={noteContent}
-              onChange={(e) => setNoteContent(e.target.value)}
-              className="flex-grow-1 mb-3"
-            />
-            <Button variant="primary" onClick={handleSaveNote}>
-              Mentés
-            </Button>
-          </>
-        ) : (
-          <p>Válassz ki egy jegyzetet!</p>
-        )}
-      </div>
+          <Button variant="success" onClick={() => setShowModal(true)}>
+            + Új jegyzet
+          </Button>
+        </Col>
 
-      <div className="p-3" style={{ width: "20%" }}>
-        <h5>Verziók</h5>
-        <div className="d-flex flex-column gap-2">
-          {versions.map((v, i) => (
-            <Card
-              key={i}
-              className="border-secondary"
-              style={{ cursor: "pointer" }}
-              onClick={() => handleLoadVersion(v)}
-            >
-              <Card.Body>
-                <Card.Title>{v.title}</Card.Title>
-                <Card.Text>
-                  <small>{v.date}</small>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          ))}
-        </div>
-      </div>
+        <Col
+          xs={12}
+          md={6}
+          className="border-end border-start mb-3 mb-md-0 d-flex flex-column"
+        >
+          {selectedNote !== null ? (
+            <>
+              <Form.Control
+                type="text"
+                className="mb-3"
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(e.target.value)}
+                placeholder="Jegyzet címe"
+              />
+              <Form.Control
+                as="textarea"
+                rows={10}
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                className="flex-grow-1 mb-3"
+              />
+              <Button variant="primary" onClick={handleSaveNote}>
+                Mentés
+              </Button>
+            </>
+          ) : (
+            <p>Válassz ki egy jegyzetet!</p>
+          )}
+        </Col>
+
+        <Col xs={12} md={3}>
+          <h5>Verziók</h5>
+          <div className="d-flex flex-column gap-2">
+            {versions.map((v, i) => (
+              <Card
+                key={i}
+                className="border-secondary"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleLoadVersion(v)}
+              >
+                <Card.Body>
+                  <Card.Title>{v.title}</Card.Title>
+                  <Card.Text>
+                    <small>{v.date}</small>
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            ))}
+          </div>
+        </Col>
+      </Row>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -180,7 +206,8 @@ function Notes() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </Container>
   );
 }
+
 export default Notes;

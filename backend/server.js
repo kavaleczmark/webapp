@@ -14,4 +14,7 @@ app.use(cookieParser());
 const userRoutes = require("./routes/user");
 app.use("/user", userRoutes);
 
+const notesHistoryRoutes = require("./routes/notesHistory");
+app.use("/notes", notesHistoryRoutes);
+
 app.listen(process.env.PORT);

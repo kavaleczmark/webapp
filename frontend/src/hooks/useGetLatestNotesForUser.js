@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { instance as axios } from "../api/axios";
 import { useAuthContext } from "./useAuthContext";
 
-export const useNoteHistory = () => {
+export const useGetLatestNotesForUser = () => {
   const { user } = useAuthContext();
   const [noteHistory, setNoteHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +14,7 @@ export const useNoteHistory = () => {
     setError(null);
     setIsFinished(false);
     try {
-      const response = await axios.get("/notes/history");
+      const response = await axios.get(`notes/getNotes`);
       if (response.status === 200) {
         setNoteHistory(response.data);
         setIsFinished(true);

@@ -34,6 +34,31 @@ const getLatestNotesForUser = async (req, res) => {
   }
 };
 
+const createNote = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const newNote = await Notes.create({ user_id: userId });
+    const history = await NotesHistory.create({
+      notes_id: newNote.id,
+      version_id: 1,
+      title: req.body.title || "Névtelen jegyzet",
+      text: req.body.text || "",
+      date: new Date()
+    });
+
+    res.status(201).json({
+      message: "Jegyzet sikeresen létrehozva",
+      noteId: newNote.id,
+      version: history
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Hiba történt a jegyzet létrehozásakor" });
+  }
+};
+
 module.exports = {
-  getLatestNotesForUser
+  getLatestNotesForUser,
+  createNote
 };

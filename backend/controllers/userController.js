@@ -1,5 +1,5 @@
 const User = require("../models/users");
-const { sha1, createAccessToken, createRefreshToken } = require("../utils/userUtils");
+const { sha1, createToken, createRefreshToken } = require("../utils/userUtils");
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const jwt = require("jsonwebtoken");
@@ -22,7 +22,7 @@ const login = async (req, res) => {
       if (!user) {
         throw Error("Hibás felhasználónév vagy jelszó!");
       }
-      const token = createAccessToken(user.id);
+      const token = createToken(user.id);
       res.cookie("user", token, {
         httpOnly: true,
         secure: true,
@@ -83,7 +83,7 @@ const register = async (req, res) => {
     );
 
     if (response !== null) {
-      const token = createAccessToken(response.get("id"));
+      const token = createToken(response.get("id"));
       res.cookie("user", token, {
         httpOnly: true,
         secure: true,
@@ -122,8 +122,8 @@ const refresh = async (req, res) => {
       if (err) {
         return res.status(406).json({ error: "Jogosulatlan" });
       } else {
-        const token = createAccessToken(decoded.id);
-        res.cookie("access", token, {
+        const token = createToken(decoded.id);
+        res.cookie("user", token, {
           httpOnly: true,
           secure: true,
           sameSite: "strict",
@@ -149,14 +149,13 @@ const getUserData = async (req, res) => {
   const userId = req.user.id;
   try {
     const user = await User.findOne({
-      attributes: ["id", "username", "password", "reg_date"],
+      attributes: ["id", "username", "reg_date"],
       where: { id: userId },
     });
     if (user) {
       res.status(200).json({
         data: {
           username: user.username,
-          password: user.password,
           reg_date: user.reg_date,
         },
       });

@@ -3,9 +3,9 @@ const crypto = require("crypto");
 const sha1 = (data) => {
     return crypto.createHash("sha1").update(data).digest("hex");
 };
-const createAccessToken = (id) => {
+const createToken = (id) => {
     return webtoken.sign({id}, process.env.SECRET, {
-        expiresIn: "15m"
+        expiresIn: "10m"
     })
 }
 const createRefreshToken = (id) => {
@@ -15,6 +15,6 @@ const createRefreshToken = (id) => {
 }
 module.exports = {
     sha1,
-    createAccessToken,
+    createToken,
     createRefreshToken
 }
