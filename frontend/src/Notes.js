@@ -17,7 +17,7 @@ import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from "./hooks/useLogout";
-
+import { useDeleteNote } from "./hooks/useDeleteNote";
 
 function Notes() {
     const [showModal, setShowModal] = useState(false);
@@ -29,19 +29,21 @@ function Notes() {
     const [versions, setVersions] = useState([]);
     const [notesOpen, setNotesOpen] = useState(true);
     const [versionsOpen, setVersionsOpen] = useState(true);
-    const {logout} = useLogout();
+    const [deletingNoteId, setDeletingNoteId] = useState(null);
+
+    const { logout } = useLogout();
     const navigate = useNavigate();
     const { data } = useGetUserData();
-    const { noteHistory, isLoading, isFinished, error, refreshNoteHistory } =
-        useGetLatestNotesForUser();
-    const {createNote,isLoading: isCreating,isFinished: createFinished,error: createError,} = useCreateNote();
+    const { noteHistory, isLoading, isFinished, error, refreshNoteHistory } = useGetLatestNotesForUser();
+    const { createNote, isLoading: isCreating, isFinished: createFinished, error: createError } = useCreateNote();
     const toastId = useRef(null);
     const createButton = useRef(null);
+    const { deleteNote, isLoading: isDeleting, isFinished: deleteFinished, error: deleteError } = useDeleteNote();
+
     const handleLogout = () => {
         logout();
         navigate("/");
     }
-
 
     useEffect(() => {
         if (isFinished && noteHistory.length > 0) {
@@ -138,6 +140,56 @@ function Notes() {
         toast.info("Korábbi verzió betöltve.");
     };
 
+    const handleDeleteNote = async (e, index) => {
+        e.stopPropagation();
+        const noteToDelete = notes[index];
+        
+        // Ide tedd be a logolást
+        console.log("Törlésre kiválasztott jegyzet:", noteToDelete);
+        console.log("Törlésre kiválasztott jegyzet azonosítója (notesId):", noteToDelete?.notesId);
+        console.log("Index:", index);
+
+        if (noteToDelete && noteToDelete.notesId) {
+            setDeletingNoteId(noteToDelete.notesId);
+            await deleteNote(noteToDelete.notesId);
+        } else {
+            toast.error("Nem lehetett törölni a jegyzetet: Hiányzó azonosító.");
+        }
+    };
+
+    useEffect(() => {
+        const deleteLoadingToastId = 'deleteLoading';
+
+        if (isDeleting) {
+            if (!toast.isActive(deleteLoadingToastId)) {
+                toast.loading("Jegyzet törlése...", { toastId: deleteLoadingToastId, autoClose: false });
+            }
+        } else {
+            if (toast.isActive(deleteLoadingToastId)) {
+                toast.dismiss(deleteLoadingToastId);
+            }
+
+            if (deleteFinished) {
+                if (deleteError) {
+                    toast.error(deleteError);
+                } else {
+                    toast.success("Jegyzet sikeresen törölve!");
+                    refreshNoteHistory();
+
+                    const currentlySelectedNoteId = selectedNote !== null ? notes[selectedNote]?.notesId : null;
+
+                    if (deletingNoteId !== null && currentlySelectedNoteId === deletingNoteId) {
+                         setSelectedNote(null);
+                         setNoteText("");
+                         setNoteTitle("");
+                         setVersions([]);
+                    }
+                    setDeletingNoteId(null);
+                }
+            }
+        }
+    }, [isDeleting, deleteFinished, deleteError, refreshNoteHistory, selectedNote, notes, deletingNoteId]);
+
 
     return (
         <Container fluid className="vh-100 py-3">
@@ -192,8 +244,8 @@ function Notes() {
 
                     <Collapse in={notesOpen}>
                         <div id="notes-collapse-text"
-                            className="list-group flex-grow-1"
-                            style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
+                             className="list-group flex-grow-1"
+                             style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
                         >
                             {isLoading ? (
                                 <p className="text-muted">Jegyzetek betöltése...</p>
@@ -218,19 +270,9 @@ function Notes() {
                                         </div>
                                         <span
                                             className="btn btn-sm btn-outline-danger rounded-pill"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const updatedNotes = notes.filter((_, i) => i !== index);
-                                                setNotes(updatedNotes);
-                                                if (selectedNote === index) {
-                                                    setSelectedNote(null);
-                                                    setNoteText("");
-                                                    setNoteTitle("");
-                                                    setVersions([]);
-                                                }
-                                                toast.warn(`A(z) "${note.title}" jegyzet törlése implementálásra vár!`);
-                                            }}
+                                            onClick={(e) => handleDeleteNote(e, index)}
                                             title="Törlés"
+                                            disabled={isDeleting}
                                         >
                                             🗑️
                                         </span>
@@ -296,12 +338,14 @@ function Notes() {
                                 className="d-flex flex-column gap-2 flex-grow-1"
                                 style={{
                                     overflowY: 'auto',
-                                    maxHeight: '700px',
+                                    maxHeight: window.innerWidth >= 768
+                                        ? '700px'
+                                        : versionsOpen ? '100px' : '0',
                                 }}
                             >
                                 {selectedNote !== null ? (
                                     versions.length > 0 ? (
-                                        versions.map((v, i) => (
+                                        [...versions].reverse().map((v, i) => (
                                             <Card
                                                 key={i}
                                                 className="border-secondary"
@@ -348,7 +392,7 @@ function Notes() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Jegyzet tartalma</Form.Label>
+                            <Form.Label>Jegyzet tartalma</Form.Label> {/* Corrected tag */}
                             <Form.Control
                                 as="textarea"
                                 rows={5}

@@ -26,7 +26,7 @@ const getLatestNotesForUser = async (req, res) => {
         };
       })
     );
-
+    
     res.status(200).json(result);
   } catch (err) {
     console.error(err.message);
