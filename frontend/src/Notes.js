@@ -286,7 +286,7 @@ function Notes() {
                 className="d-flex flex-column gap-2 flex-grow-1"
                 style={{
                     overflowY: 'auto',
-                    maxHeight: '700px', // opcionális magasságkorlát
+                    maxHeight: '700px', 
                 }}
             >
                 {selectedNote !== null ? (
