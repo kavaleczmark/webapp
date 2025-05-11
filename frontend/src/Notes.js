@@ -267,56 +267,59 @@ function Notes() {
                 </Col>
 
                 <Col xs={12} md={3} className="d-flex flex-column order-2 order-md-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h6 className="mb-0">Verziók ({versions.length})</h6>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => setVersionsOpen(!versionsOpen)}
-                            aria-controls="versions-collapse-text"
-                            aria-expanded={versionsOpen}
-                        >
-                            {versionsOpen ? '-' : '+'}
-                        </Button>
-                    </div>
+    <div className="d-flex justify-content-between align-items-center mb-2">
+        <h6 className="mb-0">Verziók ({versions.length})</h6>
+        <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => setVersionsOpen(!versionsOpen)}
+            aria-controls="versions-collapse-text"
+            aria-expanded={versionsOpen}
+        >
+            {versionsOpen ? '-' : '+'}
+        </Button>
+    </div>
 
-                    <Collapse in={versionsOpen}>
-                        <div id="versions-collapse-text"
-                            className="d-flex flex-column gap-2 flex-grow-1"
-                            style={{
-                                maxHeight: window.innerWidth >= 768
-                                    ? '700px'
-                                    : versionsOpen ? '100px' : '0',
-                                overflowY: 'auto',
-                            }}
-                        >
-                             {selectedNote !== null ? (
-                                versions.length > 0 ? (
-                                    versions.map((v, i) => (
-                                        <Card
-                                            key={i}
-                                            className="border-secondary"
-                                            style={{ cursor: "pointer" }}
-                                            onClick={() => handleLoadVersion(v)}
-                                        >
-                                            <Card.Body className="p-2">
-                                                <Card.Title className="mb-1 text-truncate">{v.title}</Card.Title>
-                                                <Card.Text>
-                                                    <small className="text-muted text-truncate" style={{maxWidth: '180px', display: 'block'}}>{v.text?.substring(0, 30)}{v.text && v.text.length > 30 ? '...' : ''}</small>
-                                                    <small className="text-muted">{v.date}</small>
-                                                </Card.Text>
-                                            </Card.Body>
-                                        </Card>
-                                    ))
-                                ) : (
-                                    <p className="text-muted">Nincsenek korábbi verziók ehhez a jegyzethez.</p>
-                                )
-                            ) : (
-                                <p className="text-muted">Válassz ki egy jegyzetet a verziók megtekintéséhez.</p>
-                            )}
-                        </div>
-                    </Collapse>
-                </Col>
+    <Collapse in={versionsOpen}>
+        <div id="versions-collapse-text">
+            <div
+                className="d-flex flex-column gap-2 flex-grow-1"
+                style={{
+                    overflowY: 'auto',
+                    maxHeight: '700px', // opcionális magasságkorlát
+                }}
+            >
+                {selectedNote !== null ? (
+                    versions.length > 0 ? (
+                        versions.map((v, i) => (
+                            <Card
+                                key={i}
+                                className="border-secondary"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => handleLoadVersion(v)}
+                            >
+                                <Card.Body className="p-2">
+                                    <Card.Title className="mb-1 text-truncate">{v.title}</Card.Title>
+                                    <Card.Text>
+                                        <small className="text-muted text-truncate" style={{ maxWidth: '180px', display: 'block' }}>
+                                            {v.text?.substring(0, 30)}{v.text && v.text.length > 30 ? '...' : ''}
+                                        </small>
+                                        <small className="text-muted">{v.date}</small>
+                                    </Card.Text>
+                                </Card.Body>
+                            </Card>
+                        ))
+                    ) : (
+                        <p className="text-muted">Nincsenek korábbi verziók ehhez a jegyzethez.</p>
+                    )
+                ) : (
+                    <p className="text-muted">Válassz ki egy jegyzetet a verziók megtekintéséhez.</p>
+                )}
+            </div>
+        </div>
+    </Collapse>
+</Col>
+
             </Row>
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>
