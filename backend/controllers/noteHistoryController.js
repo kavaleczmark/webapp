@@ -58,7 +58,55 @@ const createNote = async (req, res) => {
   }
 };
 
+const deleteNoteAndHistory = async (req, res) => {
+    const userId = req.user.id;
+    const noteIdToDelete = req.params.id;
+
+    if (!noteIdToDelete) {
+        return res.status(400).json({ error: "Hiányzó jegyzet azonosító!" });
+    }
+
+    try {
+        const note = await Notes.findOne({
+            where: {
+                id: noteIdToDelete,
+                user_id: userId
+            }
+        });
+
+        if (!note) {
+             const existsButWrongUser = await Notes.findOne({
+                 where: { id: noteIdToDelete }
+             });
+             if (existsButWrongUser) {
+                 return res.status(403).json({ error: "Nincs jogosultságod törölni ezt a jegyzetet!" });
+             } else {
+                 return res.status(404).json({ error: "Jegyzet nem található!" });
+             }
+        }
+
+        await NotesHistory.destroy({
+            where: {
+                notes_id: noteIdToDelete
+            }
+        });
+
+        await Notes.destroy({
+            where: {
+                id: noteIdToDelete
+            }
+        });
+
+        res.status(200).json({ message: "Jegyzet és előzményei sikeresen törölve!" });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Hiba történt a jegyzet törlésekor!" });
+    }
+};
+
 module.exports = {
   getLatestNotesForUser,
-  createNote
+  createNote,
+  deleteNoteAndHistory
 };
