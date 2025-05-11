@@ -30,7 +30,7 @@ function Notes() {
     const [notesOpen, setNotesOpen] = useState(true);
     const [versionsOpen, setVersionsOpen] = useState(true);
     const [deletingNoteId, setDeletingNoteId] = useState(null);
-
+    const deleteToastIdRef = useRef(null);
     const { logout } = useLogout();
     const navigate = useNavigate();
     const { data } = useGetUserData();
@@ -50,7 +50,8 @@ function Notes() {
             const transformed = noteHistory.map((n) => ({
                 title: n.latestVersion?.title || "Névtelen jegyzet",
                 text: n.latestVersion?.text || "",
-                notesId: n.notes_id,
+                notesId: n.noteId,
+                versionId: n.latestVersion?.version_id || null,
                 date: n.latestVersion?.date || "",
             }));
             setNotes(transformed);
@@ -62,6 +63,7 @@ function Notes() {
             setVersions([]);
         }
     }, [isFinished, noteHistory]);
+
 
     const handleCreateNote = async (e) => {
         e.preventDefault();
@@ -143,8 +145,6 @@ function Notes() {
     const handleDeleteNote = async (e, index) => {
         e.stopPropagation();
         const noteToDelete = notes[index];
-        
-        // Ide tedd be a logolást
         console.log("Törlésre kiválasztott jegyzet:", noteToDelete);
         console.log("Törlésre kiválasztott jegyzet azonosítója (notesId):", noteToDelete?.notesId);
         console.log("Index:", index);
@@ -158,38 +158,49 @@ function Notes() {
     };
 
     useEffect(() => {
-        const deleteLoadingToastId = 'deleteLoading';
+        if (isDeleting && !deleteToastIdRef.current) {
+             deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
+        } else if (!isDeleting && deleteToastIdRef.current) {
+            if (deleteError) {
+                toast.update(deleteToastIdRef.current, {
+                    render: deleteError,
+                    type: "error",
+                    isLoading: false,
+                    closeButton: true,
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    pauseOnFocusLoss: true,
+                });
+            } else if (deleteFinished) {
+                 toast.update(deleteToastIdRef.current, {
+                    render: "Jegyzet sikeresen törölve!",
+                    type: "success",
+                    isLoading: false,
+                    closeButton: true,
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    pauseOnFocusLoss: true,
+                });
+                refreshNoteHistory();
 
-        if (isDeleting) {
-            if (!toast.isActive(deleteLoadingToastId)) {
-                toast.loading("Jegyzet törlése...", { toastId: deleteLoadingToastId, autoClose: false });
-            }
-        } else {
-            if (toast.isActive(deleteLoadingToastId)) {
-                toast.dismiss(deleteLoadingToastId);
-            }
-
-            if (deleteFinished) {
-                if (deleteError) {
-                    toast.error(deleteError);
-                } else {
-                    toast.success("Jegyzet sikeresen törölve!");
-                    refreshNoteHistory();
-
-                    const currentlySelectedNoteId = selectedNote !== null ? notes[selectedNote]?.notesId : null;
-
-                    if (deletingNoteId !== null && currentlySelectedNoteId === deletingNoteId) {
-                         setSelectedNote(null);
-                         setNoteText("");
-                         setNoteTitle("");
-                         setVersions([]);
-                    }
-                    setDeletingNoteId(null);
+                const currentlySelectedNoteId = selectedNote !== null ? notes[selectedNote]?.notesId : null;
+                if (deletingNoteId !== null && currentlySelectedNoteId === deletingNoteId) {
+                     setSelectedNote(null);
+                     setNoteText("");
+                     setNoteTitle("");
+                     setVersions([]);
                 }
+                setDeletingNoteId(null);
             }
+            deleteToastIdRef.current = null;
         }
     }, [isDeleting, deleteFinished, deleteError, refreshNoteHistory, selectedNote, notes, deletingNoteId]);
-
 
     return (
         <Container fluid className="vh-100 py-3">
@@ -392,7 +403,7 @@ function Notes() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Jegyzet tartalma</Form.Label> {/* Corrected tag */}
+                            <Form.Label>Jegyzet tartalma</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={5}

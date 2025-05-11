@@ -16,7 +16,7 @@ const getLatestNotesForUser = async (req, res) => {
         const latest = await NotesHistory.findOne({
           where: { notes_id: note.id },
           order: [["version_id", "DESC"]],
-          attributes: ["version_id", "title", "text", "date"],
+          attributes: ["notes_id","version_id", "title", "text", "date"],
           raw: true
         });
 
@@ -61,7 +61,7 @@ const createNote = async (req, res) => {
 const deleteNoteAndHistory = async (req, res) => {
     const userId = req.user.id;
     const noteIdToDelete = req.params.id;
-
+    console.log(noteIdToDelete);
     if (!noteIdToDelete) {
         return res.status(400).json({ error: "Hiányzó jegyzet azonosító!" });
     }
