@@ -36,7 +36,7 @@ function Notes() {
     const { saveNoteVersion, isSaving, isFinished: saveFinished, error: saveError } = useSaveNoteVersion();
     const saveToastIdRef = useRef(null);
     const { versions: loadedVersions, isFinished: versionsFinished, error: versionsError, getVersions } = useGetNoteVersions(
-    notes[selectedNote]?.notesId
+        notes[selectedNote]?.notesId
     );
 
 
@@ -164,16 +164,16 @@ function Notes() {
         }
     }, [isSaving, saveFinished, saveError]);
 
-   useEffect(() => {
-    if (versionsFinished) {
-        if (loadedVersions) {
-            setVersions(loadedVersions);
+    useEffect(() => {
+        if (versionsFinished) {
+            if (loadedVersions) {
+                setVersions(loadedVersions);
+            }
         }
-    }
 
-    if (versionsError) {
-        console.error(`Hiba a verziók betöltésekor: ${versionsError}`);
-    }
+        if (versionsError) {
+            console.error(`Hiba a verziók betöltésekor: ${versionsError}`);
+        }
     }, [versionsFinished, loadedVersions, versionsError]);
 
     const handleLoadVersion = (version) => {
@@ -392,11 +392,12 @@ function Notes() {
                                     maxHeight: window.innerWidth >= 768
                                         ? '700px'
                                         : versionsOpen ? '100px' : '0',
+                                    paddingBottom: '1rem',
                                 }}
                             >
                                 {selectedNote !== null ? (
                                     versions.length > 0 ? (
-                                        [...versions].map((v, i) => (
+                                        [...versions].reverse().map((v, i) => (
                                             <Card
                                                 key={i}
                                                 className="border-secondary"
