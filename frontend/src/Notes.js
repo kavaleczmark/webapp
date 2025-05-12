@@ -443,15 +443,6 @@ function Notes() {
                                 autoFocus
                             />
                         </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Jegyzet tartalma</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={5}
-                                value={noteText}
-                                onChange={(e) => setNoteText(e.target.value)}
-                            />
-                        </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
