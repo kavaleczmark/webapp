@@ -68,7 +68,7 @@ function Notes() {
     const handleCreateNote = async (e) => {
         e.preventDefault();
         toastId.current = toast.loading("Kérem várjon...");
-        await createNote(newNoteTitle || "Névtelen jegyzet", noteText);
+        await createNote(newNoteTitle || "Névtelen jegyzet", "");
     };
 
     useEffect(() => {
@@ -88,7 +88,7 @@ function Notes() {
                     draggable: true,
                     pauseOnFocusLoss: true,
                 });
-
+                
                 refreshNoteHistory();
                 setShowModal(false);
                 setNewNoteTitle("");
