@@ -12,13 +12,14 @@ import { useDeleteNote } from "./hooks/useDeleteNote";
 import { useSaveNoteVersion } from "./hooks/useSaveNoteVersion";
 import { useGetNoteVersions } from "./hooks/useGetNoteVersions";
 
+
 function Notes() {
     const [showModal, setShowModal] = useState(false);
     const [newNoteTitle, setNewNoteTitle] = useState("");
-    const [notes, setNotes] = useState([]);
+    const [notes, setNotes] = useState([]); 
     const [selectedNote, setSelectedNote] = useState(null); 
     const [noteText, setNoteText] = useState(""); 
-    const [noteTitle, setNoteTitle] = useState(""); 
+    const [noteTitle, setNoteTitle] = useState("");
     const [versions, setVersions] = useState([]); 
     const [notesOpen, setNotesOpen] = useState(true);
     const [versionsOpen, setVersionsOpen] = useState(true);
@@ -53,7 +54,6 @@ function Notes() {
                 versionId: n.latestVersion?.version_id || null,
                 date: n.latestVersion?.date || "",
             }));
-
             transformed.sort((a, b) => {
                 const dateA = new Date(a.date);
                 const dateB = new Date(b.date);
@@ -64,7 +64,7 @@ function Notes() {
             });
             setNotes(transformed);
             const prevSelectedId = previouslySelectedNoteIdRef.current;
-
+            console.log(prevSelectedId);
             if (prevSelectedId !== null) {
                 const newSelectedNoteIndex = transformed.findIndex(note => note.notesId === prevSelectedId);
                 if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
@@ -86,13 +86,13 @@ function Notes() {
             setVersions([]);
             previouslySelectedNoteIdRef.current = null;
         }
-    }, [isFinished, noteHistory, selectedNote]);
-
+    }, [isFinished, noteHistory, selectedNote]); 
 
     const handleCreateNote = async (e) => {
         e.preventDefault();
         await createNote(newNoteTitle || "Névtelen jegyzet", "");
     };
+
     useEffect(() => {
         if (isCreating && !createToastIdRef.current) {
             createToastIdRef.current = toast.loading("Kérem várjon...");
@@ -115,6 +115,7 @@ function Notes() {
                 setShowModal(false);
                 setNewNoteTitle("");
                 setNoteText("");
+
             } else if (createError) {
                 toast.update(createToastIdRef.current, {
                     render: `${createError}`,
@@ -142,7 +143,6 @@ function Notes() {
             await saveNoteVersion(notesId, noteTitle, noteText);
             refreshNoteHistory();
             await getVersions();
-
         } else {
             toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
         }
@@ -181,7 +181,6 @@ function Notes() {
             saveToastIdRef.current = null;
         }
     }, [isSaving, saveFinished, saveError]);
-
     useEffect(() => {
         if (versionsFinished) {
             if (loadedVersions) {
@@ -211,6 +210,7 @@ function Notes() {
         setNoteTitle(version.title);
         toast.info("Korábbi verzió betöltve.");
     };
+
     const handleSelectNote = (index) => {
         setSelectedNote(index);
         if (notes[index]) {
@@ -225,11 +225,9 @@ function Notes() {
         }
     };
 
-
     const handleDeleteNote = async (e, index) => {
         e.stopPropagation();
         const noteToDelete = notes[index];
-
         if (noteToDelete && noteToDelete.notesId) {
             setDeletingNoteId(noteToDelete.notesId);
             previouslySelectedNoteIdRef.current = noteToDelete.notesId;
@@ -276,11 +274,13 @@ function Notes() {
             deleteToastIdRef.current = null;
         }
     }, [isDeleting, deleteFinished, deleteError, refreshNoteHistory]);
+
+
     return (
         <Container fluid className="vh-100 py-3">
             <ToastContainer
                 position="top-center"
-                autoClose={5000}
+                autoClose={2000}
                 hideProgressBar={false}
                 newestOnTop={false}
                 closeOnClick={false}
@@ -416,9 +416,11 @@ function Notes() {
 
                     <Collapse in={versionsOpen}>
                         <div id="versions-collapse-text">
+                             {/* Verziók betöltése állapot jelzése */}
                             {selectedNote !== null && !versionsFinished && !versionsError && (
                                 <p className="text-muted">Verziók betöltése...</p>
                             )}
+                             {/* Verzió betöltési hiba jelzése */}
                              {selectedNote !== null && versionsError && (
                                  <p className="text-danger">Hiba történt a verziók betöltésekor.</p>
                              )}
