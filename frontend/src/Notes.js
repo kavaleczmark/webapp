@@ -1,14 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-    Modal,
-    Button,
-    Form,
-    Card,
-    Row,
-    Col,
-    Container,
-    Collapse,
-} from "react-bootstrap";
+import {Modal, Button, Form, Card, Row, Col, Container, Collapse} from "react-bootstrap";
 import { useGetUserData } from "./hooks/useGetUserData";
 import { FaUserCircle } from "react-icons/fa";
 import { useGetLatestNotesForUser } from "./hooks/useGetLatestNotesForUser";
@@ -18,6 +9,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from "./hooks/useLogout";
 import { useDeleteNote } from "./hooks/useDeleteNote";
+import { useSaveNoteVersion } from "./hooks/useSaveNoteVersion";
+import { useGetNoteVersions } from "./hooks/useGetNoteVersions";
+
 
 function Notes() {
     const [showModal, setShowModal] = useState(false);
@@ -39,6 +33,12 @@ function Notes() {
     const toastId = useRef(null);
     const createButton = useRef(null);
     const { deleteNote, isLoading: isDeleting, isFinished: deleteFinished, error: deleteError } = useDeleteNote();
+    const { saveNoteVersion, isSaving, isFinished: saveFinished, error: saveError } = useSaveNoteVersion();
+    const { versions: loadedVersions, isFinished: versionsFinished, getVersions } = useGetNoteVersions(
+        notes[selectedNote]?.notesId
+    );
+
+    
 
     const handleLogout = () => {
         logout();
@@ -112,29 +112,51 @@ function Notes() {
     }, [createFinished, createError, isCreating, refreshNoteHistory]);
 
 
-    const handleSaveNote = () => {
-        if (selectedNote !== null) {
-            const newVersion = {
-                title: noteTitle,
-                date: new Date().toLocaleString(),
-                text: noteText,
-            };
-            const updatedVersions = [...versions, newVersion];
-            setVersions(updatedVersions);
-            const updatedNotes = [...notes];
-            if (updatedNotes[selectedNote]) {
-                updatedNotes[selectedNote].title = noteTitle;
-                updatedNotes[selectedNote].content = noteText;
-                updatedNotes[selectedNote].text = noteText;
-                setNotes(updatedNotes);
-                toast.success("Jegyzet elmentve (helyileg)!");
-            } else {
-                toast.warn("Hiba: A kiválasztott jegyzet nem található a listában.");
-            }
+    const handleSaveNote = async () => {
+    if (selectedNote !== null) {
+        const note = notes[selectedNote];
+        const { notesId } = note;
+
+        await saveNoteVersion(notesId, noteTitle, noteText);
+
+        const newVersion = {
+            title: noteTitle,
+            date: new Date().toLocaleString(),
+            text: noteText,
+        };
+        const updatedVersions = [...versions, newVersion];
+        setVersions(updatedVersions);
+
+        const updatedNotes = [...notes];
+        if (updatedNotes[selectedNote]) {
+            updatedNotes[selectedNote].title = noteTitle;
+            updatedNotes[selectedNote].text = noteText;
+            setNotes(updatedNotes);
+            toast.success("Jegyzet elmentve!");
         } else {
-            toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
+            toast.warn("A kiválasztott jegyzet nem található a listában.");
         }
+
+        await getVersions();
+    } else {
+        toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
+    }
     };
+
+    useEffect(() => {
+    const loadVersions = async () => {
+    if (selectedNote !== null && notes[selectedNote]?.notesId) {
+      const loaded = await getVersions();
+      if (loaded) {
+        setVersions(loaded);
+      }
+    }
+    };
+
+     loadVersions();
+    }, [selectedNote, notes, getVersions]);
+
+
 
     const handleLoadVersion = (version) => {
         setNoteText(version.text);

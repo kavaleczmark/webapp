@@ -105,8 +105,55 @@ const deleteNoteAndHistory = async (req, res) => {
     }
 };
 
+const saveNoteVersion = async (req, res) => {
+  const { notesId, title, text } = req.body;
+
+  try {
+    const lastVersion = await NotesHistory.findOne({
+      where: { notes_id: notesId },
+      order: [["version_id", "DESC"]],
+    });
+
+    const newVersionId = lastVersion ? lastVersion.version_id + 1 : 1;
+
+    const newHistory = await NotesHistory.create({
+      notes_id: notesId,
+      version_id: newVersionId,
+      title,
+      text,
+      date: new Date(),
+    });
+
+    res.status(200).json({
+      message: "Új verzió elmentve",
+      version: newHistory,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Mentési hiba" });
+  }
+};
+
+const getNoteVersions = async (req, res) => {
+  const { noteId } = req.params;
+
+  try {
+    const versions = await NotesHistory.findAll({
+      where: { notes_id: noteId },
+      order: [["version_id", "DESC"]],
+    });
+
+    res.status(200).json(versions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Verziók lekérdezése sikertelen" });
+  }
+};
+
 module.exports = {
   getLatestNotesForUser,
   createNote,
-  deleteNoteAndHistory
+  deleteNoteAndHistory,
+  saveNoteVersion,
+  getNoteVersions,
 };
