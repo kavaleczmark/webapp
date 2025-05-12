@@ -34,6 +34,7 @@ function Notes() {
     const createButton = useRef(null);
     const { deleteNote, isLoading: isDeleting, isFinished: deleteFinished, error: deleteError } = useDeleteNote();
     const { saveNoteVersion, isSaving, isFinished: saveFinished, error: saveError } = useSaveNoteVersion();
+    const saveToastIdRef = useRef(null);
     const { versions: loadedVersions, isFinished: versionsFinished, getVersions } = useGetNoteVersions(
         notes[selectedNote]?.notesId
     );
@@ -119,22 +120,11 @@ function Notes() {
 
         await saveNoteVersion(notesId, noteTitle, noteText);
 
-        const newVersion = {
-            title: noteTitle,
-            date: new Date().toLocaleString(),
-            text: noteText,
-        };
-        const updatedVersions = [...versions, newVersion];
-        setVersions(updatedVersions);
-
         const updatedNotes = [...notes];
         if (updatedNotes[selectedNote]) {
             updatedNotes[selectedNote].title = noteTitle;
             updatedNotes[selectedNote].text = noteText;
             setNotes(updatedNotes);
-            toast.success("Jegyzet elmentve!");
-        } else {
-            toast.warn("A kiválasztott jegyzet nem található a listában.");
         }
 
         await getVersions();
@@ -142,6 +132,40 @@ function Notes() {
         toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
     }
     };
+
+    useEffect(() => {
+    if (isSaving && !saveToastIdRef.current) {
+        saveToastIdRef.current = toast.loading("Mentés folyamatban...");
+    } else if (!isSaving && saveToastIdRef.current) {
+        if (saveFinished) {
+            toast.update(saveToastIdRef.current, {
+                render: "Jegyzet elmentve!",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+                closeButton: true,
+                hideProgressBar: false,
+                pauseOnHover: true,
+                draggable: true,
+            });
+        } else if (saveError) {
+            toast.update(saveToastIdRef.current, {
+                render: saveError,
+                type: "error",
+                isLoading: false,
+                autoClose: 5000,
+                closeButton: true,
+                hideProgressBar: false,
+                pauseOnHover: true,
+                draggable: true,
+            });
+        }
+
+        saveToastIdRef.current = null;
+    }
+    }, [isSaving, saveFinished, saveError]);
+
+
 
     useEffect(() => {
     const loadVersions = async () => {
