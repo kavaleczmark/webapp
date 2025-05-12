@@ -396,7 +396,7 @@ function Notes() {
                             >
                                 {selectedNote !== null ? (
                                     versions.length > 0 ? (
-                                        [...versions].reverse().map((v, i) => (
+                                        [...versions].map((v, i) => (
                                             <Card
                                                 key={i}
                                                 className="border-secondary"
