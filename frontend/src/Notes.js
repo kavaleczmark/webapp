@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {Modal, Button, Form, Card, Row, Col, Container, Collapse} from "react-bootstrap";
+import { Modal, Button, Form, Card, Row, Col, Container, Collapse } from "react-bootstrap";
 import { useGetUserData } from "./hooks/useGetUserData";
 import { FaUserCircle } from "react-icons/fa";
 import { useGetLatestNotesForUser } from "./hooks/useGetLatestNotesForUser";
@@ -35,11 +35,10 @@ function Notes() {
     const { deleteNote, isLoading: isDeleting, isFinished: deleteFinished, error: deleteError } = useDeleteNote();
     const { saveNoteVersion, isSaving, isFinished: saveFinished, error: saveError } = useSaveNoteVersion();
     const saveToastIdRef = useRef(null);
-    const { versions: loadedVersions, isFinished: versionsFinished, getVersions } = useGetNoteVersions(
-        notes[selectedNote]?.notesId
+    const { versions: loadedVersions, isFinished: versionsFinished, error: versionsError, getVersions } = useGetNoteVersions(
+    notes[selectedNote]?.notesId
     );
 
-    
 
     const handleLogout = () => {
         logout();
@@ -114,73 +113,68 @@ function Notes() {
 
 
     const handleSaveNote = async () => {
-    if (selectedNote !== null) {
-        const note = notes[selectedNote];
-        const { notesId } = note;
+        if (selectedNote !== null) {
+            const note = notes[selectedNote];
+            const { notesId } = note;
 
-        await saveNoteVersion(notesId, noteTitle, noteText);
+            await saveNoteVersion(notesId, noteTitle, noteText);
 
-        const updatedNotes = [...notes];
-        if (updatedNotes[selectedNote]) {
-            updatedNotes[selectedNote].title = noteTitle;
-            updatedNotes[selectedNote].text = noteText;
-            setNotes(updatedNotes);
+            const updatedNotes = [...notes];
+            if (updatedNotes[selectedNote]) {
+                updatedNotes[selectedNote].title = noteTitle;
+                updatedNotes[selectedNote].text = noteText;
+                setNotes(updatedNotes);
+            }
+
+            await getVersions();
+        } else {
+            toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
         }
-
-        await getVersions();
-    } else {
-        toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
-    }
     };
 
     useEffect(() => {
-    if (isSaving && !saveToastIdRef.current) {
-        saveToastIdRef.current = toast.loading("Mentés folyamatban...");
-    } else if (!isSaving && saveToastIdRef.current) {
-        if (saveFinished) {
-            toast.update(saveToastIdRef.current, {
-                render: "Jegyzet elmentve!",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-                closeButton: true,
-                hideProgressBar: false,
-                pauseOnHover: true,
-                draggable: true,
-            });
-        } else if (saveError) {
-            toast.update(saveToastIdRef.current, {
-                render: saveError,
-                type: "error",
-                isLoading: false,
-                autoClose: 5000,
-                closeButton: true,
-                hideProgressBar: false,
-                pauseOnHover: true,
-                draggable: true,
-            });
-        }
+        if (isSaving && !saveToastIdRef.current) {
+            saveToastIdRef.current = toast.loading("Mentés folyamatban...");
+        } else if (!isSaving && saveToastIdRef.current) {
+            if (saveFinished) {
+                toast.update(saveToastIdRef.current, {
+                    render: "Jegyzet elmentve!",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 3000,
+                    closeButton: true,
+                    hideProgressBar: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
+            } else if (saveError) {
+                toast.update(saveToastIdRef.current, {
+                    render: saveError,
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 5000,
+                    closeButton: true,
+                    hideProgressBar: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
+            }
 
-        saveToastIdRef.current = null;
-    }
+            saveToastIdRef.current = null;
+        }
     }, [isSaving, saveFinished, saveError]);
 
-
-
-    useEffect(() => {
-    const loadVersions = async () => {
-    if (selectedNote !== null && notes[selectedNote]?.notesId) {
-      const loaded = await getVersions();
-      if (loaded) {
-        setVersions(loaded);
-      }
+   useEffect(() => {
+    if (versionsFinished) {
+        if (loadedVersions) {
+            setVersions(loadedVersions);
+        }
     }
-    };
 
-     loadVersions();
-    }, [selectedNote, notes, getVersions]);
-
-
+    if (versionsError) {
+        console.error(`Hiba a verziók betöltésekor: ${versionsError}`);
+    }
+    }, [versionsFinished, loadedVersions, versionsError]);
 
     const handleLoadVersion = (version) => {
         setNoteText(version.text);
@@ -205,7 +199,7 @@ function Notes() {
 
     useEffect(() => {
         if (isDeleting && !deleteToastIdRef.current) {
-             deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
+            deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
         } else if (!isDeleting && deleteToastIdRef.current) {
             if (deleteError) {
                 toast.update(deleteToastIdRef.current, {
@@ -221,7 +215,7 @@ function Notes() {
                     pauseOnFocusLoss: true,
                 });
             } else if (deleteFinished) {
-                 toast.update(deleteToastIdRef.current, {
+                toast.update(deleteToastIdRef.current, {
                     render: "Jegyzet sikeresen törölve!",
                     type: "success",
                     isLoading: false,
@@ -237,10 +231,10 @@ function Notes() {
 
                 const currentlySelectedNoteId = selectedNote !== null ? notes[selectedNote]?.notesId : null;
                 if (deletingNoteId !== null && currentlySelectedNoteId === deletingNoteId) {
-                     setSelectedNote(null);
-                     setNoteText("");
-                     setNoteTitle("");
-                     setVersions([]);
+                    setSelectedNote(null);
+                    setNoteText("");
+                    setNoteTitle("");
+                    setVersions([]);
                 }
                 setDeletingNoteId(null);
             }
@@ -301,8 +295,8 @@ function Notes() {
 
                     <Collapse in={notesOpen}>
                         <div id="notes-collapse-text"
-                             className="list-group flex-grow-1"
-                             style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
+                            className="list-group flex-grow-1"
+                            style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
                         >
                             {isLoading ? (
                                 <p className="text-muted">Jegyzetek betöltése...</p>

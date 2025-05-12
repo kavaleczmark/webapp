@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { instance as axios } from '../api/axios';
 
 export const useGetNoteVersions = (noteId) => {
@@ -7,7 +7,13 @@ export const useGetNoteVersions = (noteId) => {
   const [isFinished, setIsFinished] = useState(false);
   const [error, setError] = useState(null);
 
-  const getVersions = useCallback(async () => {
+  const getVersions = async () => {
+    if (!noteId) {
+      setVersions([]);
+      setIsFinished(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setIsFinished(false);
@@ -17,23 +23,17 @@ export const useGetNoteVersions = (noteId) => {
       if (response.status === 200) {
         setVersions(response.data);
         setIsFinished(true);
-        setIsLoading(false);
-        return response.data;
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Hiba a verziók lekérésekor");
+      setError(err.response?.data?.error || 'Hiba a verziók lekérésekor');
+    } finally {
       setIsLoading(false);
     }
-  }, [noteId]); 
+  };
 
   useEffect(() => {
-    if (noteId) {
-      getVersions();
-    } else {
-      setVersions([]);
-      setIsFinished(false);
-    }
-  }, [noteId, getVersions]);
+    getVersions();
+  }, [noteId]);
 
-  return { versions, isLoading, isFinished, error, getVersions };
+  return { versions, isLoading, isFinished, error, getVersions }; 
 };
