@@ -16,11 +16,12 @@ import { useGetNoteVersions } from "./hooks/useGetNoteVersions";
 function Notes() {
     const [showModal, setShowModal] = useState(false);
     const [newNoteTitle, setNewNoteTitle] = useState("");
-    const [notes, setNotes] = useState([]); 
-    const [selectedNote, setSelectedNote] = useState(null); 
-    const [noteText, setNoteText] = useState(""); 
+    const [notes, setNotes] = useState([]);
+    const [selectedNote, setSelectedNote] = useState(null);
+    const [selectedVersion, setSelectedVersion] = useState(null);
+    const [noteText, setNoteText] = useState("");
     const [noteTitle, setNoteTitle] = useState("");
-    const [versions, setVersions] = useState([]); 
+    const [versions, setVersions] = useState([]);
     const [notesOpen, setNotesOpen] = useState(true);
     const [versionsOpen, setVersionsOpen] = useState(true);
     const [deletingNoteId, setDeletingNoteId] = useState(null);
@@ -37,7 +38,7 @@ function Notes() {
     const { saveNoteVersion, isSaving, isFinished: saveFinished, error: saveError } = useSaveNoteVersion();
     const saveToastIdRef = useRef(null);
     const { versions: loadedVersions, isFinished: versionsFinished, error: versionsError, getVersions } = useGetNoteVersions(
-        selectedNote !== null ? notes[selectedNote]?.notesId : null 
+        selectedNote !== null ? notes[selectedNote]?.notesId : null
     );
 
     const handleLogout = () => {
@@ -70,8 +71,8 @@ function Notes() {
                 console.log(newSelectedNoteIndex)
                 console.log(selectedNote);
                 if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
-                     setSelectedNote(0);
-                     setNoteTitle(transformed[0].title)
+                    setSelectedNote(0);
+                    setNoteTitle(transformed[0].title)
                 } else if (newSelectedNoteIndex === -1 && selectedNote !== null) {
                     setVersions([]);
                     previouslySelectedNoteIdRef.current = null;
@@ -85,11 +86,11 @@ function Notes() {
             setNotes([]);
             setSelectedNote(null);
             setNoteText("");
-            
+
             setVersions([]);
             previouslySelectedNoteIdRef.current = null;
         }
-    }, [isFinished, noteHistory, selectedNote]); 
+    }, [isFinished, noteHistory, selectedNote]);
 
     const handleCreateNote = async (e) => {
         e.preventDefault();
@@ -195,7 +196,7 @@ function Notes() {
                 });
                 setVersions(sortedVersions);
             } else {
-                 setVersions([]);
+                setVersions([]);
             }
         }
 
@@ -239,7 +240,7 @@ function Notes() {
     };
     useEffect(() => {
         if (isDeleting && !deleteToastIdRef.current) {
-             deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
+            deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
         } else if (!isDeleting && deleteToastIdRef.current) {
             if (deleteError) {
                 toast.update(deleteToastIdRef.current, {
@@ -255,7 +256,7 @@ function Notes() {
                     pauseOnFocusLoss: true,
                 });
             } else if (deleteFinished) {
-                 toast.update(deleteToastIdRef.current, {
+                toast.update(deleteToastIdRef.current, {
                     render: "Jegyzet sikeresen törölve!",
                     type: "success",
                     isLoading: false,
@@ -330,8 +331,8 @@ function Notes() {
 
                     <Collapse in={notesOpen}>
                         <div id="notes-collapse-text"
-                             className="list-group flex-grow-1"
-                             style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
+                            className="list-group flex-grow-1"
+                            style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
                         >
                             {isLoading ? (
                                 <p className="text-muted">Jegyzetek betöltése...</p>
@@ -417,14 +418,12 @@ function Notes() {
 
                     <Collapse in={versionsOpen}>
                         <div id="versions-collapse-text">
-                             {/* Verziók betöltése állapot jelzése */}
                             {selectedNote !== null && !versionsFinished && !versionsError && (
                                 <p className="text-muted">Verziók betöltése...</p>
                             )}
-                             {/* Verzió betöltési hiba jelzése */}
-                             {selectedNote !== null && versionsError && (
-                                 <p className="text-danger">Hiba történt a verziók betöltésekor.</p>
-                             )}
+                            {selectedNote !== null && versionsError && (
+                                <p className="text-danger">Hiba történt a verziók betöltésekor.</p>
+                            )}
                             <div
                                 className="d-flex flex-column gap-2 flex-grow-1"
                                 style={{
@@ -440,9 +439,12 @@ function Notes() {
                                         versions.map((v, i) => (
                                             <Card
                                                 key={v.version_id || i}
-                                                className="border-secondary"
+                                                className={`border border-secondary ${selectedVersion === i ? 'bg-primary text-white' : ''}`}
                                                 style={{ cursor: "pointer" }}
-                                                onClick={() => handleLoadVersion(v)}
+                                                onClick={() => {
+                                                    handleLoadVersion(v);
+                                                    setSelectedVersion(i);
+                                                }}
                                             >
                                                 <Card.Body className="p-2">
                                                     <Card.Title className="mb-1 text-truncate">{v.title}</Card.Title>
@@ -458,10 +460,10 @@ function Notes() {
                                     ) : (
                                         <p className="text-muted">Nincsenek korábbi verziók ehhez a jegyzethez.</p>
                                     )
-                                ) }
-                                 {selectedNote === null && (
-                                      <p className="text-muted">Válassz ki egy jegyzetet a verziók megtekintéséhez.</p>
-                                 )}
+                                )}
+                                {selectedNote === null && (
+                                    <p className="text-muted">Válassz ki egy jegyzetet a verziók megtekintéséhez.</p>
+                                )}
                             </div>
                         </div>
                     </Collapse>
