@@ -73,6 +73,7 @@ function Notes() {
                 if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
                     setSelectedNote(0);
                     setNoteTitle(transformed[0].title)
+                    setSelectedVersion(0);
                 } else if (newSelectedNoteIndex === -1 && selectedNote !== null) {
                     setVersions([]);
                     previouslySelectedNoteIdRef.current = null;
@@ -138,6 +139,7 @@ function Notes() {
 
 
     const handleSaveNote = async () => {
+        setSelectedVersion(0);
         if (selectedNote !== null) {
             const note = notes[selectedNote];
             const { notesId } = note;
@@ -215,6 +217,7 @@ function Notes() {
 
     const handleSelectNote = (index) => {
         setSelectedNote(index);
+        setSelectedVersion(0);
         if (notes[index]) {
             previouslySelectedNoteIdRef.current = notes[index].notesId;
             setNoteText(notes[index].text);
