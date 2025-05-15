@@ -12,7 +12,6 @@ import { useDeleteNote } from "./hooks/useDeleteNote";
 import { useSaveNoteVersion } from "./hooks/useSaveNoteVersion";
 import { useGetNoteVersions } from "./hooks/useGetNoteVersions";
 
-
 function Notes() {
     const [showModal, setShowModal] = useState(false);
     const [newNoteTitle, setNewNoteTitle] = useState("");

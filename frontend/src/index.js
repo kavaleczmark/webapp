@@ -7,15 +7,24 @@ import Registration from './Registration';
 import SignIn from './SignIn';
 import { AuthContextProvider } from './context/AuthContext';
 import { useAuthContext } from './hooks/useAuthContext';
-import Notes from './Notes.js'
-function App() {
+import Notes from './Notes.js';
+import Error from './Error.js';
 
+function App() {
+  const PrivateRoute = ({ children }) => {
+    const { user } = useAuthContext();
+    if (!user) {
+      return <Navigate to="/" />;
+    }
+    return children;
+  };
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/regisztracio" element={<Registration />} />
         <Route path="/" element={<SignIn />} />
-        <Route path="/jegyzetek" element={<Notes />} />
+        <Route path="/jegyzetek" element={<PrivateRoute><Notes /></PrivateRoute>} />
+         <Route path="*" element={<Error />} />
       </Routes>
     </BrowserRouter>
   );
