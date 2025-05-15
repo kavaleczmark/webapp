@@ -67,22 +67,25 @@ function Notes() {
             console.log(prevSelectedId);
             if (prevSelectedId !== null) {
                 const newSelectedNoteIndex = transformed.findIndex(note => note.notesId === prevSelectedId);
+                console.log(newSelectedNoteIndex)
+                console.log(selectedNote);
                 if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
-                     setSelectedNote(newSelectedNoteIndex);
+                     setSelectedNote(0);
+                     setNoteTitle(transformed[0].title)
                 } else if (newSelectedNoteIndex === -1 && selectedNote !== null) {
-                    setSelectedNote(null);
-                    setNoteText("");
-                    setNoteTitle("");
                     setVersions([]);
                     previouslySelectedNoteIdRef.current = null;
                 }
+            }
+            else {
+                setNoteTitle(transformed[0].title)
             }
 
         } else if (isFinished && noteHistory.length === 0) {
             setNotes([]);
             setSelectedNote(null);
-            setNoteTitle("");
             setNoteText("");
+            
             setVersions([]);
             previouslySelectedNoteIdRef.current = null;
         }
@@ -110,11 +113,9 @@ function Notes() {
                     draggable: true,
                     pauseOnFocusLoss: true,
                 });
-
                 refreshNoteHistory();
+                handleSelectNote(0);
                 setShowModal(false);
-                setNewNoteTitle("");
-                setNoteText("");
 
             } else if (createError) {
                 toast.update(createToastIdRef.current, {
