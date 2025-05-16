@@ -26,7 +26,7 @@ const login = async (req, res) => {
       res.cookie("user", token, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: FIFTEEN_MINUTES,
       });
   
@@ -34,7 +34,7 @@ const login = async (req, res) => {
       res.cookie("refresh", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: ONE_DAY,
       });
   
@@ -87,7 +87,7 @@ const register = async (req, res) => {
       res.cookie("user", token, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: FIFTEEN_MINUTES,
       });
 
@@ -95,7 +95,7 @@ const register = async (req, res) => {
       res.cookie("refresh", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: ONE_DAY,
       });
 
@@ -126,7 +126,7 @@ const refresh = async (req, res) => {
         res.cookie("user", token, {
           httpOnly: true,
           secure: true,
-          sameSite: "strict",
+          sameSite: "none",
           maxAge: FIFTEEN_MINUTES,
         });
 
@@ -134,7 +134,7 @@ const refresh = async (req, res) => {
         res.cookie("refresh", refreshToken, {
           httpOnly: true,
           secure: true,
-          sameSite: "strict",
+          sameSite: "none",
           maxAge: ONE_DAY,
         });
         return res.status(200).json({ msg: "Sikeres" });
