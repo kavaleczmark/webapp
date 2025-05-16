@@ -71,7 +71,8 @@ function Notes() {
                 console.log(selectedNote);
                 if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
                     setSelectedNote(0);
-                    setNoteTitle(transformed[0].title)
+                    setNoteTitle(transformed[0].title);
+                    setNoteText(transformed[0].text);
                     setSelectedVersion(0);
                 } else if (newSelectedNoteIndex === -1 && selectedNote !== null) {
                     setVersions([]);
