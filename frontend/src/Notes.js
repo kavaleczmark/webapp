@@ -39,8 +39,6 @@ function Notes() {
     const { versions: loadedVersions, isFinished: versionsFinished, error: versionsError, getVersions } = useGetNoteVersions(
         selectedNote !== null ? notes[selectedNote]?.notesId : null
     );
-    const noteTextRef = useRef();
-    const noteTitleRef = useRef();
 
     const handleLogout = () => {
         logout();
@@ -142,19 +140,29 @@ function Notes() {
 
     const handleSaveNote = async () => {
     setSelectedVersion(0);
-    if (selectedNote !== null) {
-        const note = notes[selectedNote];
-        const { notesId } = note;
-        previouslySelectedNoteIdRef.current = notesId;
-        const currentTitle = noteTitleRef.current.value;
-        const currentText = noteTextRef.current.value;
-        await saveNoteVersion(notesId, currentTitle, currentText);
-        await refreshNoteHistory();
-        await getVersions();
-    } else {
-        toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
-    }
-};
+        if (selectedNote !== null) {
+            const note = notes[selectedNote];
+            const { notesId } = note;
+            previouslySelectedNoteIdRef.current = notesId;
+
+            await saveNoteVersion(notesId, noteTitle, noteText);
+            await refreshNoteHistory();
+            await getVersions();
+            const updatedNote = {
+                ...note,
+                title: noteTitle,
+                text: noteText,
+                date: new Date().toISOString()
+            };
+            setNotes((prevNotes) => [
+                updatedNote,
+                ...prevNotes.filter((n) => n.notesId !== notesId),
+            ]);
+        } else {
+            toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
+        }
+    };
+
 
     useEffect(() => {
         if (isSaving && !saveToastIdRef.current) {
@@ -385,18 +393,16 @@ function Notes() {
                     {selectedNote !== null ? (
                         <>
                             <Form.Control
-                                ref={noteTitleRef}
                                 type="text"
                                 className="mb-3"
-                                defaultValue={noteTitle}
+                                value={noteTitle}
                                 onChange={(e) => setNoteTitle(e.target.value)}
                                 placeholder="Jegyzet címe"
                             />
                             <Form.Control
-                                ref={noteTextRef}
                                 as="textarea"
                                 rows={10}
-                                defaultValue={noteText}
+                                value={noteText}
                                 onChange={(e) => setNoteText(e.target.value)}
                                 className="flex-grow-1 mb-3"
                                 placeholder="Írd ide a jegyzet tartalmát..."
