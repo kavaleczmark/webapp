@@ -145,8 +145,8 @@ function Notes() {
         const { notesId } = note;
         previouslySelectedNoteIdRef.current = notesId;
         await saveNoteVersion(notesId, noteTitle, noteText);
-        await getVersions();
-        refreshNoteHistory();
+        getVersions();
+        await refreshNoteHistory();
     } else {
         toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
     }
