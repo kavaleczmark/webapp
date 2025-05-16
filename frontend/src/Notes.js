@@ -140,29 +140,17 @@ function Notes() {
 
     const handleSaveNote = async () => {
     setSelectedVersion(0);
-        if (selectedNote !== null) {
-            const note = notes[selectedNote];
-            const { notesId } = note;
-            previouslySelectedNoteIdRef.current = notesId;
-
-            await saveNoteVersion(notesId, noteTitle, noteText);
-            await refreshNoteHistory();
-            await getVersions();
-            const updatedNote = {
-                ...note,
-                title: noteTitle,
-                text: noteText,
-                date: new Date().toISOString()
-            };
-            setNotes((prevNotes) => [
-                updatedNote,
-                ...prevNotes.filter((n) => n.notesId !== notesId),
-            ]);
-        } else {
-            toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
-        }
-    };
-
+    if (selectedNote !== null) {
+        const note = notes[selectedNote];
+        const { notesId } = note;
+        previouslySelectedNoteIdRef.current = notesId;
+        await saveNoteVersion(notesId, noteTitle, noteText);
+        await getVersions();
+        refreshNoteHistory();
+    } else {
+        toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
+    }
+};
 
     useEffect(() => {
         if (isSaving && !saveToastIdRef.current) {
