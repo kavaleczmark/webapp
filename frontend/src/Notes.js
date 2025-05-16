@@ -39,6 +39,8 @@ function Notes() {
     const { versions: loadedVersions, isFinished: versionsFinished, error: versionsError, getVersions } = useGetNoteVersions(
         selectedNote !== null ? notes[selectedNote]?.notesId : null
     );
+    const noteTextRef = useRef();
+    const noteTitleRef = useRef();
 
     const handleLogout = () => {
         logout();
@@ -144,7 +146,9 @@ function Notes() {
         const note = notes[selectedNote];
         const { notesId } = note;
         previouslySelectedNoteIdRef.current = notesId;
-        await saveNoteVersion(notesId, noteTitle, noteText);
+        const currentTitle = noteTitleRef.current.value;
+        const currentText = noteTextRef.current.value;
+        await saveNoteVersion(notesId, currentTitle, currentText);
         await refreshNoteHistory();
         await getVersions();
     } else {
@@ -381,16 +385,18 @@ function Notes() {
                     {selectedNote !== null ? (
                         <>
                             <Form.Control
+                                ref={noteTitleRef}
                                 type="text"
                                 className="mb-3"
-                                value={noteTitle}
+                                defaultValue={noteTitle}
                                 onChange={(e) => setNoteTitle(e.target.value)}
                                 placeholder="Jegyzet címe"
                             />
                             <Form.Control
+                                ref={noteTextRef}
                                 as="textarea"
                                 rows={10}
-                                value={noteText}
+                                defaultValue={noteText}
                                 onChange={(e) => setNoteText(e.target.value)}
                                 className="flex-grow-1 mb-3"
                                 placeholder="Írd ide a jegyzet tartalmát..."
