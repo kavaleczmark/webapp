@@ -16,6 +16,7 @@ const sequelize = new Sequelize(
   }
 );
 
+
 sequelize
   .sync({ force: false })
   .then(() => {
