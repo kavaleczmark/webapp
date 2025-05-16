@@ -12,7 +12,6 @@ import { useDeleteNote } from "./hooks/useDeleteNote";
 import { useSaveNoteVersion } from "./hooks/useSaveNoteVersion";
 import { useGetNoteVersions } from "./hooks/useGetNoteVersions";
 
-
 function Notes() {
     const [showModal, setShowModal] = useState(false);
     const [newNoteTitle, setNewNoteTitle] = useState("");
@@ -26,15 +25,12 @@ function Notes() {
     const [versionsOpen, setVersionsOpen] = useState(true);
     const [deletingNoteId, setDeletingNoteId] = useState(null);
     const deleteToastIdRef = useRef(null);
-
     const previouslySelectedNoteIdRef = useRef(null);
-    const [justCreatedNoteId, setJustCreatedNoteId] = useState(null);
-
     const { logout } = useLogout();
     const navigate = useNavigate();
     const { data } = useGetUserData();
     const { noteHistory, isLoading, isFinished, error, refreshNoteHistory } = useGetLatestNotesForUser();
-    const { createNote, isLoading: isCreating, isFinished: createFinished, error: createError, createdNoteData } = useCreateNote();
+    const { createNote, isLoading: isCreating, isFinished: createFinished, error: createError } = useCreateNote();
     const createToastIdRef = useRef(null);
     const createButton = useRef(null);
     const { deleteNote, isLoading: isDeleting, isFinished: deleteFinished, error: deleteError } = useDeleteNote();
@@ -49,21 +45,6 @@ function Notes() {
         navigate("/");
     }
 
-    const updateSelectedNoteContent = (note) => {
-        if (note) {
-            previouslySelectedNoteIdRef.current = note.notesId;
-            setNoteText(note.text);
-            setNoteTitle(note.title);
-            setSelectedVersion(0);
-        } else {
-            previouslySelectedNoteIdRef.current = null;
-            setNoteText("");
-            setNoteTitle("");
-            setVersions([]);
-            setSelectedVersion(null);
-        }
-    };
-
     useEffect(() => {
         if (isFinished && noteHistory.length > 0) {
             const transformed = noteHistory.map((n) => ({
@@ -73,7 +54,6 @@ function Notes() {
                 versionId: n.latestVersion?.version_id || null,
                 date: n.latestVersion?.date || "",
             }));
-
             transformed.sort((a, b) => {
                 const dateA = new Date(a.date);
                 const dateB = new Date(b.date);
@@ -82,55 +62,36 @@ function Notes() {
                 if (isNaN(dateB.getTime())) return -1;
                 return dateB.getTime() - dateA.getTime();
             });
-
             setNotes(transformed);
-
-            let idToSelect = null;
-
-            if (justCreatedNoteId !== null) {
-                 idToSelect = justCreatedNoteId;
-                 setJustCreatedNoteId(null);
+            const prevSelectedId = previouslySelectedNoteIdRef.current;
+            console.log(prevSelectedId);
+            if (prevSelectedId !== null) {
+                const newSelectedNoteIndex = transformed.findIndex(note => note.notesId === prevSelectedId);
+                console.log(newSelectedNoteIndex)
+                console.log(selectedNote);
+                if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
+                    setSelectedNote(0);
+                    setNoteTitle(transformed[0].title);
+                    setNoteText(transformed[0].text);
+                    setSelectedVersion(0);
+                } else if (newSelectedNoteIndex === -1 && selectedNote !== null) {
+                    setVersions([]);
+                    previouslySelectedNoteIdRef.current = null;
+                }
             }
-            else if (previouslySelectedNoteIdRef.current !== null) {
-                 idToSelect = previouslySelectedNoteIdRef.current;
-                 previouslySelectedNoteIdRef.current = null;
-            }
-
-            let newSelectedIndex = null;
-            if (idToSelect !== null) {
-                newSelectedIndex = transformed.findIndex(note => note.notesId === idToSelect);
-            }
-
-            if (newSelectedIndex !== null && newSelectedIndex !== -1) {
-                 if (newSelectedIndex !== selectedNote) {
-                    setSelectedNote(newSelectedIndex);
-                    updateSelectedNoteContent(transformed[newSelectedIndex]);
-
-                 } else {
-                     if (idToSelect === previouslySelectedNoteIdRef.current) {
-                          previouslySelectedNoteIdRef.current = null;
-                     } else if (idToSelect === justCreatedNoteId) {
-                          setJustCreatedNoteId(null);
-                     }
-                 }
-
-            } else if (selectedNote !== null) {
-                setSelectedNote(null);
-                updateSelectedNoteContent(null);
-                previouslySelectedNoteIdRef.current = null;
-                setJustCreatedNoteId(null);
-
+            else {
+                setNoteTitle(transformed[0].title)
             }
 
         } else if (isFinished && noteHistory.length === 0) {
             setNotes([]);
             setSelectedNote(null);
-            updateSelectedNoteContent(null);
-            previouslySelectedNoteIdRef.current = null;
-            setJustCreatedNoteId(null);
-        }
-    }, [isFinished, noteHistory, selectedNote, justCreatedNoteId]);
+            setNoteText("");
 
+            setVersions([]);
+            previouslySelectedNoteIdRef.current = null;
+        }
+    }, [isFinished, noteHistory, selectedNote]);
 
     const handleCreateNote = async (e) => {
         e.preventDefault();
@@ -141,7 +102,7 @@ function Notes() {
         if (isCreating && !createToastIdRef.current) {
             createToastIdRef.current = toast.loading("Kérem várjon...");
         } else if (!isCreating && createToastIdRef.current) {
-            if (createFinished && createdNoteData) {
+            if (createFinished) {
                 toast.update(createToastIdRef.current, {
                     render: "Jegyzet sikeresen hozzáadva!",
                     type: "success",
@@ -154,13 +115,9 @@ function Notes() {
                     draggable: true,
                     pauseOnFocusLoss: true,
                 });
-
-                if (createdNoteData.noteId) {
-                     setJustCreatedNoteId(createdNoteData.noteId);
-                }
                 refreshNoteHistory();
+                handleSelectNote(0);
                 setShowModal(false);
-                setNewNoteTitle("");
 
             } else if (createError) {
                 toast.update(createToastIdRef.current, {
@@ -178,22 +135,22 @@ function Notes() {
             }
             createToastIdRef.current = null;
         }
-    }, [isCreating, createFinished, createError, refreshNoteHistory, createdNoteData]);
+    }, [createFinished, createError, isCreating, refreshNoteHistory]);
 
 
     const handleSaveNote = async () => {
-        setSelectedVersion(0);
-        if (selectedNote !== null) {
-            const note = notes[selectedNote];
-            const { notesId } = note;
-            previouslySelectedNoteIdRef.current = notesId;
-            await saveNoteVersion(notesId, noteTitle, noteText);
-            refreshNoteHistory();
-
-        } else {
-            toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
-        }
-    };
+    setSelectedVersion(0);
+    if (selectedNote !== null) {
+        const note = notes[selectedNote];
+        const { notesId } = note;
+        previouslySelectedNoteIdRef.current = notesId;
+        await saveNoteVersion(notesId, noteTitle, noteText);
+        await getVersions();
+        await refreshNoteHistory();
+    } else {
+        toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
+    }
+};
 
     useEffect(() => {
         if (isSaving && !saveToastIdRef.current) {
@@ -229,7 +186,6 @@ function Notes() {
             saveToastIdRef.current = null;
         }
     }, [isSaving, saveFinished, saveError]);
-
     useEffect(() => {
         if (versionsFinished) {
             if (loadedVersions) {
@@ -243,7 +199,7 @@ function Notes() {
                 });
                 setVersions(sortedVersions);
             } else {
-                 setVersions([]);
+                setVersions([]);
             }
         }
 
@@ -253,6 +209,7 @@ function Notes() {
         }
     }, [versionsFinished, loadedVersions, versionsError]);
 
+
     const handleLoadVersion = (version) => {
         setNoteText(version.text);
         setNoteTitle(version.title);
@@ -261,7 +218,17 @@ function Notes() {
 
     const handleSelectNote = (index) => {
         setSelectedNote(index);
-        updateSelectedNoteContent(notes[index]);
+        setSelectedVersion(0);
+        if (notes[index]) {
+            previouslySelectedNoteIdRef.current = notes[index].notesId;
+            setNoteText(notes[index].text);
+            setNoteTitle(notes[index].title);
+        } else {
+            previouslySelectedNoteIdRef.current = null;
+            setNoteText("");
+            setNoteTitle("");
+            setVersions([]);
+        }
     };
 
     const handleDeleteNote = async (e, index) => {
@@ -275,10 +242,9 @@ function Notes() {
             toast.error("Nem lehetett törölni a jegyzetet: Hiányzó azonosító.");
         }
     };
-
     useEffect(() => {
         if (isDeleting && !deleteToastIdRef.current) {
-             deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
+            deleteToastIdRef.current = toast.loading("Jegyzet törlése...");
         } else if (!isDeleting && deleteToastIdRef.current) {
             if (deleteError) {
                 toast.update(deleteToastIdRef.current, {
@@ -294,7 +260,7 @@ function Notes() {
                     pauseOnFocusLoss: true,
                 });
             } else if (deleteFinished) {
-                 toast.update(deleteToastIdRef.current, {
+                toast.update(deleteToastIdRef.current, {
                     render: "Jegyzet sikeresen törölve!",
                     type: "success",
                     isLoading: false,
@@ -306,14 +272,15 @@ function Notes() {
                     draggable: true,
                     pauseOnFocusLoss: true,
                 });
-
                 refreshNoteHistory();
                 setDeletingNoteId(null);
+                previouslySelectedNoteIdRef.current = null;
             }
 
             deleteToastIdRef.current = null;
         }
     }, [isDeleting, deleteFinished, deleteError, refreshNoteHistory]);
+
 
     return (
         <Container fluid className="vh-100 py-3">
@@ -368,8 +335,8 @@ function Notes() {
 
                     <Collapse in={notesOpen}>
                         <div id="notes-collapse-text"
-                             className="list-group flex-grow-1"
-                             style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
+                            className="list-group flex-grow-1"
+                            style={{ maxHeight: notesOpen ? 'calc(100vh - 250px)' : '0', overflowY: 'auto' }}
                         >
                             {isLoading ? (
                                 <p className="text-muted">Jegyzetek betöltése...</p>
@@ -458,9 +425,9 @@ function Notes() {
                             {selectedNote !== null && !versionsFinished && !versionsError && (
                                 <p className="text-muted">Verziók betöltése...</p>
                             )}
-                             {selectedNote !== null && versionsError && (
-                                 <p className="text-danger">Hiba történt a verziók betöltésekor.</p>
-                             )}
+                            {selectedNote !== null && versionsError && (
+                                <p className="text-danger">Hiba történt a verziók betöltésekor.</p>
+                            )}
                             <div
                                 className="d-flex flex-column gap-2 flex-grow-1"
                                 style={{
@@ -497,10 +464,10 @@ function Notes() {
                                     ) : (
                                         <p className="text-muted">Nincsenek korábbi verziók ehhez a jegyzethez.</p>
                                     )
-                                ) }
-                                 {selectedNote === null && (
-                                      <p className="text-muted">Válassz ki egy jegyzetet a verziók megtekintéséhez.</p>
-                                 )}
+                                )}
+                                {selectedNote === null && (
+                                    <p className="text-muted">Válassz ki egy jegyzetet a verziók megtekintéséhez.</p>
+                                )}
                             </div>
                         </div>
                     </Collapse>
