@@ -71,8 +71,7 @@ function Notes() {
                 console.log(selectedNote);
                 if (newSelectedNoteIndex !== -1 && newSelectedNoteIndex !== selectedNote) {
                     setSelectedNote(0);
-                    setNoteTitle(transformed[0].title);
-                    setNoteText(transformed[0].text);
+                    setNoteTitle(transformed[0].title)
                     setSelectedVersion(0);
                 } else if (newSelectedNoteIndex === -1 && selectedNote !== null) {
                     setVersions([]);
@@ -145,8 +144,8 @@ function Notes() {
         const { notesId } = note;
         previouslySelectedNoteIdRef.current = notesId;
         await saveNoteVersion(notesId, noteTitle, noteText);
-        await getVersions();
         await refreshNoteHistory();
+        await getVersions();
     } else {
         toast.warn("Nincs kiválasztott jegyzet a mentéshez.");
     }
