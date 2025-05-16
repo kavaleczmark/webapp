@@ -5,7 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: "https://webapp-w18d.vercel.app/",
         credentials: true
     })
 )
