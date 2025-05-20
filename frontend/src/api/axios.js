@@ -2,6 +2,7 @@ const API_URL = 'https://webapp-backend-40br.onrender.com/';
 const axios = require("axios");
 const instance = axios.create({
     baseURL: API_URL,
+    withCredentials: true
 });
 instance.defaults.withCredentials = true;
 instance.interceptors.response.use(
